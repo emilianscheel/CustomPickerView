@@ -22,6 +22,7 @@ class CustomPickerDelegate: NSObject, UIPickerViewDelegate, UIPickerViewDataSour
 	
 	var sections: [CustomPickerSection] = []
 	var resultView: UITextField?
+	var appSettingsKey: AppSettings.key?
 	
 	
 	func numberOfComponents(in pickerView: UIPickerView) -> Int {
@@ -35,10 +36,29 @@ class CustomPickerDelegate: NSObject, UIPickerViewDelegate, UIPickerViewDataSour
 	func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
 		return sections[component].präfix + String(row) + sections[component].suffix
 	}
+	
+	func pickerView(_ pickerView: UIPickerView, widthForComponent component: Int) -> CGFloat {
+		if sections[component].width != 0 {
+			return sections[component].width!
+		} else {
+			return CGFloat(Int(pickerView.bounds.width)/sections.count)
+		}
+	}
+	
 	func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
 		sections[component].value = row
 		
-		resultView?.text = sections[component].präfix + String(row) + sections[component].suffix
+		resultView?.text = ""
+		
+		for section in sections {
+			resultView?.text! += section.präfix + String(section.value ?? 0) + section.suffix
+		}
+		
+		guard appSettingsKey != nil else {
+			return
+		}
+		
+		AppSettings[appSettingsKey!] = row
 	}
 }
 
@@ -49,11 +69,12 @@ struct CustomPickerSection {
 	var suffix: String
 	var präfix: String
 	var value: Int?
+	var width: CGFloat?
 	
-	init(range: Int, suffix: String = "", präfix: String = "") {
+	init(range: Int, suffix: String = "", präfix: String = "", width: CGFloat = 0) {
 		self.range = range
 		self.suffix = suffix
 		self.präfix = präfix
+		self.width = width
 	}
-	
 }
